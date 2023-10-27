@@ -1,0 +1,54 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres
+    container_name: postgres_1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pfo_password
+      - POSTGRES_DB=pfo_db
+  redis:
+    container_name: redis_1
+    image: "redis:alpine"
+  web:
+    build: ./backend
+    container_name: backend_1
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/:/usr/src/app/
+    ports:
+      - "8000:8000"
+      - "587:587"
+    expose:
+      - "8000"
+    environment:
+      - POSTGRES_DB=pfo_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pfo_password
+      - POSTGRES_HOST=postgres_1
+      - POSTGRES_PORT=5432
+      - BD_FILE=/usr/src/app/db.sqlite3
+      - CELERY_BROKER_URL=redis://redis_1:6379
+      - CELERY_RESULT_BACKEND=redis://redis_1:6379
+    depends_on:
+      - db
+      - redis
+  celery:
+    restart: always
+    build: ./backend
+    container_name: celery_1
+    environment:
+      - POSTGRES_DB=pfo_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pfo_password
+      - POSTGRES_HOST=postgres_1
+      - POSTGRES_PORT=5432
+      - CELERY_BROKER_URL=redis://redis_1:6379
+      - CELERY_RESULT_BACKEND=redis://redis_1:6379
+    command:  celery -A celery_app worker --loglevel=info
+    volumes:
+      - ./backend/:/usr/src/app/
+    depends_on:
+      - redis
+      - db
