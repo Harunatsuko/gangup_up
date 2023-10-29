@@ -26,7 +26,7 @@ def input_archive(input_path, output_path, model_id) -> bool:
             files = [f"{output_path}/frames_rgb/" + frame for frame in
                      onlyfiles]
             files.sort()
-            wrapper(files, archive_model.pk)
+            wrapper(files, archive_model.pk, archive_model.show_rgb, archive_model.show_tiff)
 
         return True
     except Exception as err:

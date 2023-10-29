@@ -33,7 +33,17 @@ def simple_upload(request):
 @csrf_exempt
 def task_check(request):
     if request.method == 'POST':
-        task_id = request.POST.get('id')
+        task_id = request.POST.get('task_id')
         task = current_app.AsyncResult(task_id)
         response_data = {'task_status': task.status, 'task_id': task.id}
         return JsonResponse(response_data)
+
+@csrf_exempt
+def get_task_data(request):
+    task_id = request.GET.get('task_id')
+    archive = ArchiveModel.objects.get(pk=TaskModel.objects.get(pk=task_id).pk)
+    output_file = os.path.join(settings.BASE_DIR, settings.MEDIA_ROOT, f'output/{archive.pk}/output.mp4')
+    with open(os.path.join(settings.BASE_DIR, settings.MEDIA_ROOT, f'output/{archive.pk}/txt/output.txt')) as file:
+        total_data = list(map(int, file.read().split('\n')))
+    response_data = {'video_url': output_file, 'total_data': total_data}
+    return JsonResponse(response_data)
