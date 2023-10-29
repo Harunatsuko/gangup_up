@@ -46,7 +46,7 @@ services:
       - POSTGRES_PORT=5432
       - CELERY_BROKER_URL=redis://redis_1:6379
       - CELERY_RESULT_BACKEND=redis://redis_1:6379
-    command:  celery -A celery_app worker --loglevel=info
+    command:  celery -A api worker --loglevel=info
     volumes:
       - ./backend/:/usr/src/app/
     depends_on:
